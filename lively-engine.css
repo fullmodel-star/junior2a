@@ -1,0 +1,177 @@
+/* 活潑層 engine：lesson（920／921 以「課」為單位的複習程式（同一套））
+   來源：packages/lively/engines/lesson.css → 各 App 的 lively-engine.css
+   兩支都是上鎖 App：index.html 由 scripts/build.py＋scripts/template.html 產生（題庫加密內嵌），
+   template.html 也帶 LIVELY 標記，重建後外觀不會掉。這裡只改外觀，不碰答案判定、SRS、錯題本、密碼閘。 */
+
+/* ---------- 把 App 原本的變數接到色票 ----------
+   App 的深色寫在 @media(dark){:root:not([data-theme=light])} 與 :root[data-theme=dark]（權重 0,2,0），
+   a11yx 又在 :root 補 --muted／--brand-ink → 這裡用 :root:root:root（0,3,0）＋ body 一次蓋過；
+   --lv-* 本身已依深淺色切換，一組就涵蓋淺色／跟系統深色／手動深色。 */
+:root:root:root,body{
+  --bg:var(--lv-paper); --card:var(--lv-card); --ink:var(--lv-text); --muted:var(--lv-muted); --line:var(--lv-line);
+  --soft:var(--lv-soft); --brand:var(--lv-acc); --brand2:var(--lv-acc); --brand-ink:var(--lv-acc);
+  --ok:var(--lv-ok); --bad:var(--lv-no); --okbg:var(--lv-ok-soft); --badbg:var(--lv-no-soft);
+  --warn:var(--lv-sun); --warnbg:var(--lv-sun-soft); --gold:var(--lv-sun);
+  --shadow:0 0 0 1px var(--lv-line),0 3px 0 var(--lv-line);
+}
+html,body{background-color:var(--lv-paper)}
+body{min-height:100vh}
+
+/* 頁首山形：App 寫死白色版（原本頁首是深湖藍底）→ 頁首改淡底後，淺色換官方深色版、深色維持白色版（只換官方檔，不重新上色） */
+.rl-appbar img.rl-glyph{content:url(rl-mark-everest-navy.png)}
+html[data-theme="dark"] .rl-appbar img.rl-glyph{content:url(rl-mark-everest-white.png)}
+@media (prefers-color-scheme:dark){html:not([data-theme="light"]) .rl-appbar img.rl-glyph{content:url(rl-mark-everest-white.png)}}
+.rl-appbar{border-radius:0 0 22px 22px}
+.backbtn{background:var(--lv-card);color:var(--lv-text);box-shadow:0 0 0 1.5px var(--lv-line),0 3px 0 var(--lv-line);width:40px;height:40px;border-radius:13px}
+.backbtn:hover{background:var(--lv-card)}
+.backbtn:active{transform:translateY(2px);box-shadow:0 0 0 1.5px var(--lv-line),0 1px 0 var(--lv-line)}
+
+/* 數字用圓體（只含拉丁字，中文自動退回系統字） */
+.stat .v,.lgnum,.prog,.cta{font-family:"LvNum",system-ui,-apple-system,"Segoe UI","PingFang TC","Microsoft JhengHei",sans-serif}
+
+/* ---------- 卡片 ---------- */
+.card{border:0;border-radius:20px;box-shadow:0 0 0 1.5px var(--lv-line),0 4px 0 var(--lv-line)}
+.card h3 .lv-line-inline{color:var(--lv-acc);margin-left:0}
+.firstrun{border-left:0;box-shadow:inset 4px 0 0 var(--lv-btn),0 0 0 1.5px var(--lv-line)}
+.stat>div{background:var(--lv-soft);border-radius:14px}
+.stat .v{font-size:22px;font-weight:900;color:var(--lv-acc)}
+.stat>div:nth-child(2){background:var(--lv-sun-soft)}
+.stat>div:nth-child(2) .v{color:var(--lv-sun)}
+.stat>div:nth-child(4){background:var(--lv-ok-soft)}
+.stat>div:nth-child(4) .v{color:var(--lv-ok)}
+.bar{background:var(--lv-line);border-radius:99px;height:9px}
+.bar>i{background:var(--lv-btn);border-radius:99px}
+.bar>i.ok{background:var(--lv-ok-k)}
+/* 今日目標列：紅筆圈章的宿主 */
+.lv-kx-goal{position:relative}
+.lv-kx-goal .lv-stamp-goal{right:-4px;top:-12px}
+
+/* ---------- 按鈕：中淺色底＋深色字、有厚度 ---------- */
+.btn{background:var(--lv-btn);color:var(--lv-ink);border:0;border-radius:16px;box-shadow:0 4px 0 var(--lv-btn-d);transition:transform .08s,box-shadow .08s;font-weight:700}
+.btn:not([disabled]):active{transform:translateY(3px);box-shadow:0 1px 0 var(--lv-btn-d)}
+.btn.ghost{background:var(--lv-card);color:var(--lv-text);box-shadow:0 0 0 1.5px var(--lv-line),0 4px 0 var(--lv-line)}
+.btn.ghost:not([disabled]):active{box-shadow:0 0 0 1.5px var(--lv-line),0 1px 0 var(--lv-line)}
+.btn.soft{background:var(--lv-soft);color:var(--lv-acc);box-shadow:0 0 0 1.5px var(--lv-soft2),0 4px 0 var(--lv-soft2)}
+.btn.sm{border-radius:12px}
+.btn[disabled]{box-shadow:none}
+.btn .lv-line-inline:first-child{margin-left:0}
+/* 中翻英自評：App 行內寫死 var(--ok)／var(--bad) 實色底＋白字（深色時對比不足）→ 淡色塊＋語意色字 */
+#sok{background:var(--lv-ok-soft)!important;color:var(--lv-ok)!important;box-shadow:0 0 0 1.5px var(--lv-ok-line),0 4px 0 var(--lv-ok-line)}
+#sbad{background:var(--lv-no-soft)!important;color:var(--lv-no)!important;box-shadow:0 0 0 1.5px var(--lv-no-line),0 4px 0 var(--lv-no-line)}
+/* 首頁唯一主要行動：保留暖金（首訪說明寫「按金色鈕」，改色會對不上），加上厚度與呼吸 */
+.cta{background:#F2C14E;color:#1B1405;border-radius:18px;box-shadow:0 5px 0 #C08A1E}
+.cta small{color:#1B1405;font-family:system-ui,-apple-system,"Segoe UI","PingFang TC","Microsoft JhengHei",sans-serif}
+.cta:active{transform:translateY(4px);box-shadow:0 1px 0 #C08A1E}
+.lgstart{background:var(--lv-btn);color:var(--lv-ink)}
+
+/* ---------- 首頁課卡 ---------- */
+.lessoncard{border:0;border-radius:18px;box-shadow:0 0 0 1.5px var(--lv-line),0 4px 0 var(--lv-line);transition:transform .08s,box-shadow .08s}
+.lessoncard:hover{box-shadow:0 0 0 2px var(--lv-btn),0 4px 0 var(--lv-btn-d)}
+.lessoncard:active{transform:translateY(3px);box-shadow:0 0 0 1.5px var(--lv-line),0 1px 0 var(--lv-line)}
+.lessoncard.done{background:var(--lv-ok-soft)}
+.lghead{border-bottom:1.5px dashed var(--lv-line)}
+.lgname{color:var(--lv-acc)}
+.lgbar{background:var(--lv-line)}
+.lgbar i{background:var(--lv-btn)}
+.lgbar i.ok{background:var(--lv-ok-k)}
+
+/* ---------- 一課的入口（單字／片語／句型／文法／閱讀）：線條圖示放在彩色小方塊裡 ---------- */
+.navtile,.txtentry{border:0;border-radius:20px;box-shadow:0 0 0 1.5px var(--lv-line),0 4px 0 var(--lv-line);transition:transform .08s,box-shadow .08s}
+.navtile:hover,.txtentry:hover{background:var(--lv-card);box-shadow:0 0 0 2px var(--lv-btn),0 4px 0 var(--lv-btn-d)}
+.navtile:not(.off):active,.txtentry:active{transform:translateY(3px);box-shadow:0 0 0 1.5px var(--lv-line),0 1px 0 var(--lv-line)}
+.navtile.off:hover{box-shadow:0 0 0 1.5px var(--lv-line),0 4px 0 var(--lv-line)}
+.navtile .ic.lv-has-line,.txtentry .ic.lv-has-line{width:50px;height:50px;border-radius:15px;display:flex;align-items:center;justify-content:center;background:var(--lv-soft);color:var(--lv-acc);flex:0 0 auto}
+.navtile .ic .lv-line,.txtentry .ic .lv-line{width:28px;height:28px}
+.navtile[data-i="1"] .ic.lv-has-line{background:var(--lv-sun-soft);color:var(--lv-sun)}
+.navtile[data-i="2"] .ic.lv-has-line{background:var(--lv-ok-soft);color:var(--lv-ok)}
+.navtile[data-i="3"] .ic.lv-has-line{background:var(--lv-no-soft);color:var(--lv-no)}
+.navtile .nm{margin-top:6px}
+@media (prefers-reduced-motion:no-preference){
+  .navtile .ic.lv-has-line,.txtentry .ic.lv-has-line{transition:transform .2s cubic-bezier(.3,1.6,.5,1)}
+  .navtile:not(.off):hover .ic.lv-has-line,.txtentry:hover .ic.lv-has-line{transform:rotate(-8deg) scale(1.08)}
+}
+
+/* ---------- 單字列表、發音鈕 ---------- */
+.spk{color:var(--lv-acc)}
+.spk.lv-has-line{display:inline-flex;align-items:center;justify-content:center;min-width:40px;min-height:40px;border-radius:12px;background:var(--lv-soft);vertical-align:middle}
+.spk.lv-has-line .lv-line{width:20px;height:20px}
+.spk.word .lv-line-inline{color:var(--lv-acc);margin-left:0}
+.pill{background:var(--lv-soft);color:var(--lv-acc)}
+.pill.g{background:var(--lv-ok-soft);color:var(--lv-ok)}
+.pill.gold{background:var(--lv-sun-soft);color:var(--lv-sun)}
+.seg{background:var(--lv-soft);border-radius:14px}
+.seg button{border-radius:11px}
+.seg button.on{background:var(--lv-card);color:var(--lv-acc);box-shadow:0 0 0 1.5px var(--lv-soft2),0 2px 0 var(--lv-soft2)}
+.chip{background:var(--lv-card);border-color:var(--lv-line)}
+details.acc,details.item{border:0;border-radius:16px;box-shadow:0 0 0 1.5px var(--lv-line),0 3px 0 var(--lv-line)}
+details.acc[open]>summary{border-bottom:1.5px dashed var(--lv-line)}
+details.item.read>summary{color:var(--lv-ok)}
+.readbtn{border:0;border-radius:14px;box-shadow:0 0 0 1.5px var(--lv-line),0 3px 0 var(--lv-line);background:var(--lv-card)}
+.readbtn.on{background:var(--lv-ok-soft);color:var(--lv-ok);box-shadow:0 0 0 1.5px var(--lv-ok-line),0 3px 0 var(--lv-ok-line)}
+.hlw{color:var(--lv-acc)}
+.exbox{background:var(--lv-soft);border-radius:14px}
+
+/* ---------- 字卡：正面英文寫在四線格上（.lv-four 由 lively.js 加） ---------- */
+.flip{border:0;border-radius:22px;box-shadow:0 0 0 1.5px var(--lv-line),0 5px 0 var(--lv-line)}
+.flip .big.lv-four{font-size:32px;line-height:1.5;max-width:100%;overflow-wrap:anywhere}
+.zh .lv-kx-word.lv-four{font-size:22px;display:inline-block;margin-right:4px}
+.rate button{border:0;border-radius:16px;box-shadow:0 0 0 1.5px var(--lv-line),0 4px 0 var(--lv-line);display:flex;align-items:center;justify-content:center;gap:2px}
+.rate button:active{transform:translateY(3px);box-shadow:0 0 0 1.5px var(--lv-line),0 1px 0 var(--lv-line)}
+.rate .no{background:var(--lv-no-soft);color:var(--lv-no)}
+.rate .ok{background:var(--lv-soft);color:var(--lv-acc)}
+.rate .ez{background:var(--lv-ok-soft);color:var(--lv-ok)}
+.rate button .lv-line-inline{width:1.35em;height:1.35em;margin-left:0}
+
+/* ---------- 測驗、文法選擇、閱讀：答對綠、答錯珊瑚紅 ---------- */
+.opt{border:0;border-radius:16px;box-shadow:0 0 0 1.5px var(--lv-line),0 3px 0 var(--lv-line)}
+.opt:not([disabled]):hover{box-shadow:0 0 0 2px var(--lv-btn),0 3px 0 var(--lv-btn-d)}
+.opt:not([disabled]):active{transform:translateY(3px);box-shadow:0 0 0 1.5px var(--lv-line),0 0 0 var(--lv-line)}
+.opt.ok{background:var(--lv-ok-soft);color:var(--lv-ok);box-shadow:0 0 0 2px var(--lv-ok-line),0 3px 0 var(--lv-ok-line)}
+.opt.bad{background:var(--lv-no-soft);color:var(--lv-no);box-shadow:0 0 0 2px var(--lv-no-line),0 3px 0 var(--lv-no-line)}
+.fb{border:0!important;border-radius:14px}
+.fb.ok{background:var(--lv-ok-soft);box-shadow:0 0 0 1.5px var(--lv-ok-line)}
+.fb.bad{background:var(--lv-no-soft);box-shadow:0 0 0 1.5px var(--lv-no-line)}
+.fb.ask{background:var(--lv-sun-soft);box-shadow:0 0 0 1.5px var(--lv-line)}
+.hintbox{background:var(--lv-sun-soft);border:0;box-shadow:0 0 0 1.5px var(--lv-line);border-radius:12px}
+.cloze{color:var(--lv-acc);border-bottom-color:var(--lv-pen)}
+
+/* 拼句方塊 */
+.slot{border-color:var(--lv-soft2);border-radius:14px;background:var(--lv-card)}
+.slot.ok{border-color:var(--lv-ok-line);background:var(--lv-ok-soft)}
+.slot.bad{border-color:var(--lv-no-line);background:var(--lv-no-soft)}
+.tok{border:0;border-radius:11px;box-shadow:0 0 0 1.5px var(--lv-line),0 3px 0 var(--lv-line);font-family:"LvWord","LvNum",system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:700}
+.tok:hover{box-shadow:0 0 0 2px var(--lv-btn),0 3px 0 var(--lv-btn-d)}
+.tok:active{transform:translateY(2px);box-shadow:0 0 0 1.5px var(--lv-line),0 1px 0 var(--lv-line)}
+.slot .tok{background:var(--lv-soft);color:var(--lv-text)}
+.tok.hint{background:var(--lv-sun-soft);box-shadow:0 0 0 2px var(--lv-sun),0 3px 0 var(--lv-line)}
+
+/* 輸入框 */
+textarea.ta,input.spell,.gate input{background:var(--lv-card);color:var(--lv-text);border-color:var(--lv-line);border-radius:14px}
+textarea.ta:focus,input.spell:focus,.gate input:focus{border-color:var(--lv-btn)}
+input.spell{font-family:"LvWord","LvNum",system-ui,-apple-system,"Segoe UI",sans-serif}
+
+/* ---------- 結果頁：彩色插圖＋紅筆圈章 ---------- */
+.lv-kx-result{position:relative}
+.lv-kx-result > div:first-child .lv-ico{width:64px;height:64px;margin:0 auto}
+
+/* ---------- 底部選單（App 本來就是線條圖示）：選中的那格填淡色並彈一下 ---------- */
+.tabbar{background:var(--lv-card);border-top:1.5px solid var(--lv-line)}
+.tabbar button .ic{display:flex;align-items:center;justify-content:center;width:50px;height:30px;border-radius:15px;transition:background .2s}
+.tabbar button.on{color:var(--lv-acc)}
+.tabbar button.on .ic{background:var(--lv-soft)}
+.tabbar button .ic svg{stroke-width:1.9}
+.tabbar button.on .ic svg{stroke-width:2.2}
+
+/* 更新橫幅 */
+#updBar{background:var(--lv-btn);color:var(--lv-ink)}
+#updBar button{background:var(--lv-card);color:var(--lv-acc)}
+
+/* 921 閱讀測驗短文 */
+.rpassage{border-radius:18px}
+
+@media (prefers-reduced-motion:no-preference){
+  .cta{animation:lvKxBreath 2.8s ease-in-out infinite}
+  .cta:active{animation:none}
+  .tabbar button.on .ic svg{animation:lvPop .4s cubic-bezier(.3,1.6,.5,1)}
+}
+@keyframes lvKxBreath{0%,100%{box-shadow:0 5px 0 #C08A1E,0 0 0 0 transparent}50%{box-shadow:0 5px 0 #C08A1E,0 0 0 7px rgba(242,193,78,.3)}}
